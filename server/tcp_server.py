@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import socket
 import sys
 
@@ -36,9 +37,21 @@ def handleTCPConnections(port, directory):
             print("Attempting to open connection from " + str(client_address))
             data = connection.recv(CONNECTION_BUFFER_SIZE)
             if data:
-                # TODO: Check for cache hit or miss, also check for if the file even exists, also send the actual file
-                data = data.decode('utf-8').strip('\r\n')
-                connection.send(bytearray(data, "utf-8"))
+                data = data.decode("utf-8").strip("\r\n")
+
+                # Check if the file exists, if not send back an error message
+                if os.path.exists(directory + "/" + data) and os.path.isfile(directory + "/" + data):
+                    pass
+                else:
+                    connection.send(bytearray("Error: File not found", "utf-8"))
+                    continue
+
+                # TODO: Check for a cache hit or miss
+
+                # Send the actual file back and print a message on the server
+                with open(directory + "/" + data, "r") as openedfile:
+                    buf = openedfile.read(CONNECTION_BUFFER_SIZE)
+                    connection.send(bytearray(buf, "utf-8"))
                 print("Sending the requested file")
             else:
                 connection.send(bytearray("Error: File not found", "utf-8"))

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import socket
 import sys
 
@@ -26,9 +27,13 @@ def requestFileOverTCPConnection(server_host, port, filename):
         print("Error: received message corrupted")
         exit
 
-    # TODO: Here should not print the message, but rather save the file in the local directory
-    print(str(message))
-    
+    # Save the file to the local directory
+    if os.path.exists(filename):
+        os.remove(filename)
+    with open(filename, "w") as openedfile:
+        openedfile.write(message.decode("utf-8"))
+        
+    print("Successfully saved the file")
     return
 
 def parseArguments():
