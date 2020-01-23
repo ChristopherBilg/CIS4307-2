@@ -46,7 +46,7 @@ def handleTCPConnections(port, directory):
                     connection.send(bytearray("Error: File not found", "utf-8"))
                     continue
 
-                # TODO: Check for a cache hit or miss
+                # TODO: Check for a cache hit or miss, and implement it (64 MB)
 
                 # Send the actual file back and print a message on the server
                 with open(directory + "/" + data, "r") as openedfile:
