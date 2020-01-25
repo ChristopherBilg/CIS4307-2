@@ -19,8 +19,9 @@ def parseArguments():
     arguments = []
     arguments.append(int(sys.argv[1]))
     arguments.append(str(sys.argv[2]))
-    
+
     return arguments
+
 
 def handleTCPConnections(port, directory):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -40,10 +41,14 @@ def handleTCPConnections(port, directory):
                 data = data.decode("utf-8").strip("\r\n")
 
                 # Check if the file exists, if not send back an error message
-                if os.path.exists(directory + "/" + data) and os.path.isfile(directory + "/" + data):
+                if os.path.exists(directory + "/" + data) and os.path.isfile(
+                        directory + "/" + data
+                ):
                     pass
                 else:
-                    connection.send(bytearray("Error: File not found", "utf-8"))
+                    connection.send(
+                        bytearray("Error: File not found", "utf-8")
+                    )
                     continue
 
                 # TODO: Check for a cache hit or miss, and implement it (64 MB)
@@ -56,13 +61,14 @@ def handleTCPConnections(port, directory):
             else:
                 connection.send(bytearray("Error: File not found", "utf-8"))
                 print("The requested file was not found")
-                
+
                 return
         finally:
             print("Closing the connection from " + str(client_address))
             connection.close()
-    
+
     return
+
 
 def main():
     args = parseArguments()
@@ -70,8 +76,9 @@ def main():
         return
 
     handleTCPConnections(args[0], args[1])
-    
+
     return
+
 
 if __name__ == "__main__":
     main()
