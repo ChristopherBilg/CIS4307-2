@@ -71,18 +71,26 @@ def handleTCPConnections(port, directory):
                     for key, value in MEMORY_CACHE.items():
                         cache_size += value
                     file_size = os.path.getsize(directory + "/" + data)
-                    for key, value in FILE_CACHE.items():
-                        if cache_size + file_size > MAX_CACHE_SIZE:
-                            FILE_CACHE.pop(key)
-                    FILE_CACHE[data] = 1
-                    MEMORY_CACHE[data] = file_size
+                    if file_size < MAX_CACHE_SIZE:
+                        for key, value in FILE_CACHE.items():
+                            if cache_size + file_size > MAX_CACHE_SIZE:
+                                FILE_CACHE.pop(key)
+                        FILE_CACHE[data] = 1
+                        MEMORY_CACHE[data] = file_size
 
-                    print("The requested file was not found in the cache")
-                    print("The requested file was added to the cache")
-                    with open(directory + "/" + data) as openedfile:
-                        buf = openedfile.read(MEMORY_CACHE[data] * 2)
-                        connection.send(bytearray(buf, "utf-8"))
-                    print("Sending the requested file")
+                        print("The requested file was not found in the cache")
+                        print("The requested file was added to the cache")
+                        with open(directory + "/" + data) as openedfile:
+                            buf = openedfile.read(MEMORY_CACHE[data] * 2)
+                            connection.send(bytearray(buf, "utf-8"))
+                        print("Sending the requested file")
+                    else:
+                        print("The requested file was not found in the cache")
+                        print("The requested file was too large for the cache")
+                        with open(directory + "/" + data) as openedfile:
+                            buf = openedfile.read(file_size * 2)
+                            connection.send(bytearray(buf, "utf-8"))
+                        print("Sending the requested file")
             else:
                 # File not found error
                 connection.send(bytearray("Error: File not found", "utf-8"))
