@@ -24,16 +24,19 @@ def requestFileOverTCPConnection(server_host, port, filename):
     s.send(bytearray(filename, "utf-8"))
     message = s.recv(CONNECTION_BUFFER_SIZE)
     if not message:
-        print("Error: received message corrupted")
+        print("Error: received message was corrupted")
         exit
 
     # Save the file to the local directory
     if os.path.exists(filename):
         os.remove(filename)
-    with open(filename, "w") as openedfile:
-        openedfile.write(message.decode("utf-8"))
+    if not message.decode("utf-8").lower().startswith("error:"):
+        with open(filename, "w") as openedfile:
+            openedfile.write(message.decode("utf-8"))
+        print("Successfully saved the file")
+    else:
+        print(message.decode("utf-8"))
 
-    print("Successfully saved the file")
     return
 
 
