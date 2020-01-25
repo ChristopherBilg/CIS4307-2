@@ -7,6 +7,8 @@ import sys
 CONNECTION_BUFFER_SIZE = 1024000000    # 1024 MB
 
 
+# This function will send a message to the server requesting
+# a specific file name
 def requestFileOverTCPConnection(server_host, port, filename):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = (server_host, port)
@@ -40,6 +42,8 @@ def requestFileOverTCPConnection(server_host, port, filename):
     return
 
 
+# This function, much like that in the tcg_server.py file, will return
+# an array of the program parameters
 def parseArguments():
     argumentLength = len(sys.argv)
     if argumentLength < 4:
@@ -56,6 +60,8 @@ def parseArguments():
     return arguments
 
 
+# This function will be called to initiate the client itself
+# and will handle the connection with the server and the file passing
 def main():
     args = parseArguments()
     if args is None:
@@ -66,5 +72,7 @@ def main():
     return
 
 
+# This snippet of code verifies that this file was called through the command
+# line and not through another python file. (reduces unnecessary errors)
 if __name__ == "__main__":
     main()

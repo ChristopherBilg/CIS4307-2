@@ -10,6 +10,8 @@ FILE_CACHE = {}
 MEMORY_CACHE = {}
 
 
+# This function will return all of the program parameters
+# in an array
 def parseArguments():
     argumentLength = len(sys.argv)
     if argumentLength < 3:
@@ -25,6 +27,8 @@ def parseArguments():
     return arguments
 
 
+# This function will repeatedly loop while handling individual connections
+# and will only stop when the process itself is stopped
 def handleTCPConnections(port, directory):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = ('127.0.0.1', port)
@@ -80,17 +84,20 @@ def handleTCPConnections(port, directory):
                         connection.send(bytearray(buf, "utf-8"))
                     print("Sending the requested file")
             else:
+                # File not found error
                 connection.send(bytearray("Error: File not found", "utf-8"))
                 print("The requested file was not found")
 
                 return
         finally:
+            # Close the connection to this client and loop back
             print("Closing the connection from " + str(client_address))
             connection.close()
 
     return
 
 
+# The main function which is called to initiate the program
 def main():
     args = parseArguments()
     if args is None:
@@ -101,5 +108,7 @@ def main():
     return
 
 
+# This snippet of code verifies that this file was called through the command
+# line and not through another python file. (reduces unnecessary errors)
 if __name__ == "__main__":
     main()
