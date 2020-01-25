@@ -4,8 +4,10 @@ import os
 import socket
 import sys
 
-MAX_CACHE_SIZE = 64                    # 64 MB
-CONNECTION_BUFFER_SIZE = 1024000000    # 1024 MB
+MAX_CACHE_SIZE = 64000000                    # 64 MB
+CONNECTION_BUFFER_SIZE = 1024000000          # 1024 MB
+FILE_CACHE = {}
+MEMORY_CACHE = {}
 
 
 def parseArguments():
@@ -41,9 +43,8 @@ def handleTCPConnections(port, directory):
                 data = data.decode("utf-8").strip("\r\n")
 
                 # Check if the file exists, if not send back an error message
-                if os.path.exists(directory + "/" + data) and os.path.isfile(
-                        directory + "/" + data
-                ):
+                if (os.path.exists(directory + "/" + data)
+                        and os.path.isfile(directory + "/" + data)):
                     pass
                 else:
                     connection.send(
@@ -51,13 +52,33 @@ def handleTCPConnections(port, directory):
                     )
                     continue
 
-                # TODO: Check for a cache hit or miss, and implement it (64 MB)
+                # Was found in the 64 MB cache
+                if data in FILE_CACHE:
+                    print("The requested file was found in the cache")
+                    # Send the actual file back and print a message
+                    with open(directory + "/" + data, "r") as openedfile:
+                        buf = openedfile.read(MEMORY_CACHE[data] * 2)
+                        connection.send(bytearray(buf, "utf-8"))
+                    print("Sending the requested file")
+                # Was NOT found in the 64 MB cache, remove until enough space
+                # is found and then add it to the cache
+                else:
+                    cache_size = 0
+                    for key, value in MEMORY_CACHE.items():
+                        cache_size += value
+                    file_size = os.path.getsize(directory + "/" + data)
+                    for key, value in FILE_CACHE.items():
+                        if cache_size + file_size > MAX_CACHE_SIZE:
+                            FILE_CACHE.pop(key)
+                    FILE_CACHE[data] = 1
+                    MEMORY_CACHE[data] = file_size
 
-                # Send the actual file back and print a message on the server
-                with open(directory + "/" + data, "r") as openedfile:
-                    buf = openedfile.read(CONNECTION_BUFFER_SIZE)
-                    connection.send(bytearray(buf, "utf-8"))
-                print("Sending the requested file")
+                    print("The requested file was not found in the cache")
+                    print("The requested file was added to the cache")
+                    with open(directory + "/" + data) as openedfile:
+                        buf = openedfile.read(MEMORY_CACHE[data] * 2)
+                        connection.send(bytearray(buf, "utf-8"))
+                    print("Sending the requested file")
             else:
                 connection.send(bytearray("Error: File not found", "utf-8"))
                 print("The requested file was not found")
